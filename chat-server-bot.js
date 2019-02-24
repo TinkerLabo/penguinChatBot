@@ -1,6 +1,6 @@
 // 会話ボットの応答を生成するモジュール
 //---------------------------------
-const csv = require('csv'); //https://csv.js.org/generate/api/
+//const csv = require('csv'); //https://csv.js.org/generate/api/
 const fs = require('fs');
 const SERVER = 'localhost';
 // MongoDBの設定情報
@@ -187,7 +187,7 @@ function saveDict(outfile) {
       if (err) console.error(err);
       //console.log(documents);
       stringifier.pipe(writableStream);
-      for (let i = 0; i < documents.length; i++) {
+      for (var i = 0; i < documents.length; i++) {
         stringifier.write(documents[i]);
       }
       mongo_db.close();
