@@ -1,0 +1,95 @@
+[
+    {
+        "id": "8270cfd2.ea669",
+        "type": "websocket in",
+        "z": "79080c84.4081e4",
+        "name": "",
+        "server": "1faa17ef.a47da8",
+        "client": "",
+        "x": 130,
+        "y": 80,
+        "wires": [
+            [
+                "d08e6126.5c4f2"
+            ]
+        ]
+    },
+    {
+        "id": "d08e6126.5c4f2",
+        "type": "function",
+        "z": "79080c84.4081e4",
+        "name": "",
+        "func": "delete msg._session;\nreturn msg;\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 304,
+        "y": 80,
+        "wires": [
+            [
+                "ed639b48.1d4928"
+            ]
+        ]
+    },
+    {
+        "id": "ed639b48.1d4928",
+        "type": "websocket out",
+        "z": "79080c84.4081e4",
+        "name": "",
+        "server": "1faa17ef.a47da8",
+        "client": "",
+        "x": 485,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "d8fd0c92.d014b",
+        "type": "http in",
+        "z": "79080c84.4081e4",
+        "name": "",
+        "url": "/chat",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 120,
+        "y": 140,
+        "wires": [
+            [
+                "bc3ee46.4330718"
+            ]
+        ]
+    },
+    {
+        "id": "bc3ee46.4330718",
+        "type": "template",
+        "z": "79080c84.4081e4",
+        "name": "",
+        "field": "payload",
+        "fieldType": "msg",
+        "syntax": "mustache",
+        "template": "<head>\n    <meta name=\"viewport\" content=\"width=320, initial-scale=1\">\n    <title>bot</title>\n</head>\n\n<body>\n    <div id=\"wrapper\">\n        <div id=\"moai_box\" class=\"image\">\n            <img id=\"Moais\" src=\"Moai.jpg\">\n        </div>\n        <div id=\"control\">\n            <div class=\"content\">\n                <input type=\"text\" id=\"user\" placeholder=\"なまえ\" value=\"権兵衛\" />\n                <input type=\"text\" id=\"message\" placeholder=\"メッセージ\" value=\"こんにちは\" />\n                <input type=\"button\" id=\"send_btn\" value=\"送る\" onclick=\"sendMessage()\">\n                <input type=\"button\" id=\"add-button\" value=\"Add Bubbles\" onclick=\"addComicBubbles()\">\n                <input type=\"button\" id=\"destroy-button\" value=\"Remove Bubbles\" onclick=\"destroy()\">\n            </div>\n        </div>\n        <div id=\"chat_box\" class=\"content\"></div>\n        <br>\n        <div id=\"Moais-comic-bubbles-output\"></div>\n    </div>\n</body>\n<script src=\"comicbubbles.min.js\"></script>\n<script src=\"comicbubbles_editor.min.js\"></script>\n<script>\n    var MoaiBubbles;\n    function addComicBubbles() {\n        MoaiBubbles = new ComicBubbles(\"Moais\", { canvas: { readonly: false } }, {\n            bubble: [\n                { id: 'b1', text: \"hello\", x: 105, y: 45, width: 'auto', height: 'auto', fontSize: '30px', background: '#8b0000', color: '#ffffff', bubbleStyle: 'speak', tailLocation: 'nw', tailX: 521, tailY: 239, visible: false }\n            ]\n        });\n        MoaiBubbles.onBubbleStateChange(function (bubbles) {\n            for (var i = 0; i < bubbles.length; i++) {\n                var bubble = bubbles[i];\n            }\n        });\n        MoaiBubbles.onCanvasLoad(function () {\n            this.setResponsive(true); //'this' refers to MoaiBubbles\n            var Bubble1 = this.getBubbleById('b1');\n            // bubbles appear and disappear with callback functions\n            Bubble1.setClassName('Moais').delay(1000).setWidth('auto').setHeight('auto').pumpUp(\n                function () {\n                    Bubble1.setText(\"this is ...\");\n                });\n            document.getElementById(\"add-button\").className = \"\";\n            document.getElementById(\"destroy-button\").className = \"show\";\n        });\n    }\n    function destroy() {\n        DestroyComicBubbles(MoaiBubbles);\n        document.getElementById(\"add-button\").className = \"show\";\n        document.getElementById(\"destroy-button\").className = \"\";\n    }\n</script>\n<script type=\"text/javascript\">\n    // サーバーAPIの指定 ----(*1)\n    var api = \"http://172.24.1.1:1337/api?\";\n    var hadr = location.host;\n    var wsUri = \"ws://172.24.1.1:1880/ws/chat\";\n    var ws = new WebSocket(wsUri);\n\n    MoaiBubbles = new ComicBubbles(\"Moais\", { canvas: { readonly: false } }, {\n        bubble: [\n            { id: 'b1', text: \"hello\", x: 105, y: 45, width: 'auto', height: 'auto', fontSize: '30px', background: '#8b0000', color: '#ffffff', bubbleStyle: 'speak', tailLocation: 'nw', tailX: 521, tailY: 239, visible: false }\n        ]\n    });\n\n\n    function createSystemMessage(message) {\n        var message = document.createTextNode(message);\n        var messageBox = document.createElement('p');\n        messageBox.className = 'system';\n        messageBox.appendChild(message);\n        var chat = document.getElementById('chat_box');\n        chat.appendChild(messageBox);\n    }\n    function createUserMessage(user, message) {\n        var user = document.createTextNode(user + ': ');\n        var userBox = document.createElement('span');\n        userBox.className = 'username';\n        userBox.appendChild(user);\n        var message = document.createTextNode(message);\n        var messageBox = document.createElement('p');\n        messageBox.appendChild(userBox);\n        messageBox.appendChild(message);\n        var chat = document.getElementById('chat_box');\n        chat.appendChild(messageBox);\n    }\n    ws.onopen = function (ev) {\n        createSystemMessage('[接続]');\n    };\n    ws.onclose = function (ev) {\n        createSystemMessage('[切断]');\n    }\n    ws.onmessage = function (ev) {\n        var payload = JSON.parse(ev.data);\n        if (payload.user === 'bot') {\n            console.log('あなたはbotさんです！');\n            moaitalks(payload.message)\n        } else {\n            createUserMessage(payload.user, payload.message);\n            var chat = document.getElementById('chat_box');\n            chat.scrollTop = chat.scrollHeight;\n        }\n    }\n\n    function moaitalks(message) {\n        //MoaiBubbles.setResponsive(true); //'this' refers to MoaiBubbles\n        var Bubble1 = MoaiBubbles.getBubbleById('b1');\n        // bubbles appear and disappear with callback functions\n        Bubble1.setClassName('Moais').delay(1000).setWidth('auto').setHeight('auto').pumpUp(\n            function () {\n                Bubble1.setText(message);\n            });\n    }\n\n    function sendMessage() {\n        var userName = document.getElementById('user').value;\n        var message = document.getElementById('message').value;\n        var payload = {\n            message: message,\n            user: userName,\n            ts: (new Date()).getTime()\n        };\n        ws.send(JSON.stringify(payload));\n\n        // AjaxでAPIにメッセージを送信 --- (*3)\n        //http://172.24.1.1:1337/api?msg=%E3%81%93%E3%82%93%E3%81%AB%E3%81%A1%E3%81%AF\n        var url = api + \"msg=\" + encodeURIComponent(message);\n        $ajax(url, function (xhr, txt) {\n            // ボットの発言\n            var e = JSON.parse(txt);\n            var payload = {\n                message: e[\"msg\"],\n                user: \"bot\",\n                ts: (new Date()).getTime()\n            };\n            ws.send(JSON.stringify(payload));\n        });\n        // message.value = \"\";\n    };\n    // Ajax関数 --- (*4)\n    function $ajax(url, callback) {\n        var xhr = new XMLHttpRequest();\n        xhr.open('GET', url, true);\n        xhr.onreadystatechange = function () {\n            if (xhr.readyState == 4) { //通信完了\n                if (xhr.status == 200) { //HTTPステータス200\n                    callback(xhr, xhr.responseText);\n                }\n            }\n        };\n        xhr.send(''); // 通信を開始\n        return xhr;\n    }\n</script>\n<style type=\"text/css\">\n    #wrapper {\n        background-color: #07313b;\n    }\n\n    #moai_box {\n        box-sizing: border-box;\n        height: 50%;\n    }\n\n    #chat_box {\n        box-sizing: border-box;\n        height: 40%;\n        overflow: auto;\n    }\n\n    #control {\n        box-sizing: border-box;\n        position: fixed;\n        top: 0;\n        height: 30px;\n        width: 100%;\n        background-color: #2980b9;\n    }\n</style>",
+        "x": 300,
+        "y": 140,
+        "wires": [
+            [
+                "3f1385a6.ec375a"
+            ]
+        ]
+    },
+    {
+        "id": "3f1385a6.ec375a",
+        "type": "http response",
+        "z": "79080c84.4081e4",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 470,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "1faa17ef.a47da8",
+        "type": "websocket-listener",
+        "path": "/ws/chat",
+        "wholemsg": "false"
+    }
+]
