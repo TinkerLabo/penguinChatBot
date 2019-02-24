@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html><meta charset="utf-8"><body>
+<h3>Chat Client</h3>
+<!-- ユーザーのコメント発言フォーム -->
+<div>
+  コメント: 
+  <input id="msg" type="text" value="こんにちは。" size="40">
+  <button id="talk_btn">発言</button>
+</div>
+<hr>
+<!-- ログの表示 -->
+<div id="log" style="margin:24px;"></div>
+
+<script type="text/javascript">
+// サーバーAPIの指定 ----(*1)
+var api = "http://localhost:1337/api?";
+
+// ボタンをクリックした時のイベントを定義
+$("#talk_btn").onclick = sendMsg;
+
+//クリックした時の処理 --- (*2)
+function sendMsg() {
+  // コメントを取得し、パラメーターを組み立てる
+  var msg = $("#msg").value;
+  var url = api + "msg=" + encodeURIComponent(msg);
+  // AjaxでAPIにメッセージを送信 --- (*3)
+  $ajax(url, function(xhr, txt) {
+    // サーバーからの返信をログに表示
+    $("#msg").value = "";
+    $("#msg").focus();
+    var e = JSON.parse(txt);
+    // ユーザーの発言
+    var p_you = document.createElement("p");
+    p_you.innerHTML = "あなた &gt; " + msg + "<hr>";
+    // ボットの発言
+    var p_bot = document.createElement("p");
+    p_bot.innerHTML = "ボット &gt; " + e["msg"] + "<hr>";
+    p_bot.style.backgroundColor = "#e0f0ff";
+    // ログに追加
+    var log = $("#log");
+    log.insertBefore(p_you, log.firstChild);
+    log.insertBefore(p_bot, p_you);
+  });
+}
+
+// DOMを返す
+function $(q) { return document.querySelector(q); }
+
+// Ajax関数 --- (*4)
+function $ajax(url, callback) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', url, true);
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState == 4) { //通信完了
+      if (xhr.status == 200) { //HTTPステータス200
+        callback(xhr, xhr.responseText);
+      } 
+    }
+  };
+  xhr.send(''); // 通信を開始
+  return xhr;
+}
+</script>
+</body></html>
+

@@ -1,0 +1,23 @@
+{
+  "name": "red-project",
+  "description": "A Node-RED Project",
+  "version": "0.0.1",
+  "dependencies": {
+    "csv": "^5.1.1",
+    "mecab-lite": "0.0.8",
+    "mongodb": "^2.0.35",
+    "node-red-contrib-scx-ibmiotapp": "0.0.49",
+    "node-red-contrib-web-worldmap": "~1.3.5",
+    "node-red-dashboard": "~2.9.7"
+  },
+  "main": "settings.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "ken yuasa",
+  "license": "ISC"
+}
